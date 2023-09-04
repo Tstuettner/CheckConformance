@@ -50,7 +50,7 @@ Module Module1
             End Select
         End Function
 
-        Public Function ConvertFile(ByVal Type As TConformanceType, ByVal InFile As String, ByVal OutFile As String) As Boolean
+        Public Function ConvertFile(ByVal Type As TConformanceType, ByVal InFile As String, ByVal OutFile As String, doCompress As Boolean) As Boolean
             Dim retval As Integer, convFlags As Integer
 
             m_PDF.CreateNewPDF(Nothing)                         ' The output file will be created later
@@ -91,10 +91,14 @@ Module Module1
             End If
             m_PDF.ImportPDFFile(1, 1.0, 1.0)
             m_PDF.CloseImportFile()
+            If doCompress Then
+                m_PDF.SetCompressionLevel(TCompressionLevel.clDefault)
+                m_PDF.SetGStateFlags(TGStateFlags.gfNoObjCompression, True)
+            Else
+                m_PDF.SetCompressionLevel(TCompressionLevel.clNone)
+                m_PDF.SetGStateFlags(TGStateFlags.gfNoObjCompression, False)
 
-            m_PDF.SetCompressionLevel(TCompressionLevel.clNone)
-            m_PDF.SetGStateFlags(TGStateFlags.gfNoObjCompression, False)
-
+            End If
 
 
             ' The CMYK profile is just an example profile that can be delivered with DynaPDF.
@@ -128,10 +132,19 @@ Module Module1
             Dim c As CConvToPDFA = New CConvToPDFA()
             Dim args As String()
             args = Environment.GetCommandLineArgs
+            If args.Length < 5 Then
+                ReDim Preserve args(4)
+                args(1) = "merged.pdf"
+                args(2) = "test.pdf"
+                args(3) = "Normal"
+                args(4) = "NOCOMPRESS"
+            End If
 
             Dim inFile As String
             Dim pdfValue As String
             Dim compress As String
+            Dim doCompress As Boolean
+
 
             Dim pdfType As TConformanceType
 
@@ -139,6 +152,12 @@ Module Module1
             outFile = args(2)
             pdfValue = args(3)
             compress = args(4)
+            Select Case compress.ToUpper
+                Case "COMPRESS"
+                    doCompress = True
+                Case Else
+                    doCompress = False
+            End Select
 
 
 
@@ -172,7 +191,7 @@ Module Module1
 
             ' The file name of the XML invoice must be factur-x.xml. If the file has another name then rename it or use AttachFileEx() instead.
             ' -------------------------------------------------------------------------------------------------------------------------------------
-            If c.ConvertFile(pdfType, inFile, outFile) Then
+            If c.ConvertFile(pdfType, inFile, outFile, doCompress) Then
                 Console.Write("pdfa written " & outFile)
             Else
                 Console.Write("Problem writing pdfa " & outFile)

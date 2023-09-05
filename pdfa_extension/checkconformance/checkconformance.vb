@@ -95,7 +95,7 @@ Module Module1
                 m_PDF.SetCompressionLevel(TCompressionLevel.clDefault)
                 m_PDF.SetGStateFlags(TGStateFlags.gfNoObjCompression, True)
             Else
-                m_PDF.SetCompressionLevel(TCompressionLevel.clNone)
+                m_PDF.SetCompressionLevel(TCompressionLevel.clDefault)
                 m_PDF.SetGStateFlags(TGStateFlags.gfNoObjCompression, False)
 
             End If
